@@ -10,19 +10,40 @@ Probeer hiervoor de volgende functionaliteiten te implementeren:
 using ConsoleMusicPlayer;
 
 MediaPlayer musicPlayer = new MediaPlayer();
+musicPlayer.GetSongFile();
 
 bool keepLooping = true;
+int userInput = 6;
+PossibleChoices userChoice = PossibleChoices.Default;
 while (keepLooping)
 {
-    musicPlayer.GetSongFile();
+    userInput = musicPlayer.GetUserChoice(0,5);
+    userChoice = (PossibleChoices)userInput;
 
-    if (musicPlayer.MusicFolder == "-")
+    switch (userChoice)
     {
-        keepLooping = false;
-    }
-    else
-    {
-        musicPlayer.PlaySong();
+        case PossibleChoices.Quit:
+            keepLooping = false;
+            break;
+        case PossibleChoices.PlayPause:
+            musicPlayer.PlayPause();
+            break;
+        case PossibleChoices.ChangeVolume:
+            musicPlayer.ChangeVolume();
+            break;
+        case PossibleChoices.MuteUnmute:
+            musicPlayer.MuteUnmute();
+            break;
+        case PossibleChoices.PlayNewSong:
+            musicPlayer.GetSongFile();
+            break;
+        case PossibleChoices.Stop:
+            musicPlayer.StopCurrentSong();
+            break;
+        case PossibleChoices.Default:
+            break;
+        default:
+            break;
     }
 }
 
