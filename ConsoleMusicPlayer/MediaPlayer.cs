@@ -11,7 +11,6 @@ namespace ConsoleMusicPlayer
 
         public MediaPlayer()
         {
-            PrintTitle();
             player.settings.volume = 5;
             MusicFolder = "";
         }
@@ -19,35 +18,58 @@ namespace ConsoleMusicPlayer
         private void PrintTitle()
         {
             string title = @"
-            ___  ___         _ _         ______ _                       
-            |  \/  |        | (_)        | ___ \ |                      
-            | .  . | ___  __| |_  __ _   | |_/ / | __ _ _   _  ___ _ __ 
-            | |\/| |/ _ \/ _` | |/ _` |  |  __/| |/ _` | | | |/ _ \ '__|
-            | |  | |  __/ (_| | | (_| |  | |   | | (_| | |_| |  __/ |   
-            \_|  |_/\___|\__,_|_|\__,_|  \_|   |_|\__,_|\__, |\___|_|   
-                                                         __/ |          
-                                                        |___/           ";
-            //Console.WriteLine(String.Format("{0," + Console.WindowWidth / 2 + "}", title));
-            Console.Write("\t");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(title);
-            Console.WriteLine();
+___  ___         _ _         ______ _                       
+|  \/  |        | (_)        | ___ \ |                      
+| .  . | ___  __| |_  __ _   | |_/ / | __ _ _   _  ___ _ __ 
+| |\/| |/ _ \/ _` | |/ _` |  |  __/| |/ _` | | | |/ _ \ '__|
+| |  | |  __/ (_| | | (_| |  | |   | | (_| | |_| |  __/ |   
+\_|  |_/\___|\__,_|_|\__,_|  \_|   |_|\__,_|\__, |\___|_|   
+                                             __/ |          
+                                            |___/           ";
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            PrintStringCenter(title);
             Console.ResetColor();
+            Console.WriteLine();
         }
 
         private void PrintMenu()
         {
-            Console.WriteLine("0) Quit");
-            Console.WriteLine("1) Pause/Play");
-            Console.WriteLine("2) Change volume");
-            Console.WriteLine("3) Mute/Unmute");
-            Console.WriteLine("4) Play song");
-            Console.WriteLine("5) Stop current song");
+            string menu = @"
+╔════╦════════════════════╗
+║ #  ║ Function           ║
+╠════╬════════════════════╣
+║ 0  ║ Quit               ║
+║ 1  ║ Play/Pause         ║
+║ 2  ║ Change volume      ║
+║ 3  ║ Mute/Unmute        ║
+║ 4  ║ Play new song      ║
+║ 5  ║ Stop current song  ║
+╚════╩════════════════════╝";
+            Console.ForegroundColor= ConsoleColor.Cyan;
+            PrintStringCenter(menu);
+            Console.ResetColor();
         }
 
-        private void PrintInterface()
+        private void PrintStringCenter(string text)
         {
-            Console.Clear();
+            using (StringReader reader = new StringReader(text))
+            {
+                string line = string.Empty;
+                do
+                {
+                    line = reader.ReadLine();
+                    if (line != null)
+                    {
+                        Console.SetCursorPosition((Console.WindowWidth - line.Length) / 2, Console.CursorTop);
+                        Console.WriteLine(line);
+                    }
+                } while (line != null);
+            }
+        }
+
+        public void PrintInterface()
+        {
             PrintTitle();
             PrintMenu();
         }
@@ -59,8 +81,9 @@ namespace ConsoleMusicPlayer
             return userInput;
         }
 
-        public void GetSongFile()
+        public void CheckSongFile()
         {
+            PrintTitle();
             string filePath = "";
 
             while (filePath == "")
@@ -73,11 +96,15 @@ namespace ConsoleMusicPlayer
                 }
                 else if (Path.GetExtension(path) != ".mp3")
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("File is not an mp3");
+                    Console.ResetColor();
                 }
                 else if (!File.Exists(path))
                 {
-                    Console.WriteLine("Incorrect filepath entered");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Incorrect filepath entered or the song does not exist");
+                    Console.ResetColor();
                 }
                 else
                 {
@@ -91,24 +118,27 @@ namespace ConsoleMusicPlayer
             PlaySong();
         }
 
-        public int GetUserChoice(int lowerBound, int upperBound)
+        public int CheckUserInput(int lowerBound, int upperBound, string question)
         {
-            PrintInterface();
             bool keepLooping = true;
-            int input = lowerBound -1;
+            int input = lowerBound - 1;
 
             while (keepLooping)
             {
-                bool isNumber = int.TryParse(GetInput($"Please make a choice ({lowerBound}-{upperBound})"), out input);
+                bool isNumber = int.TryParse(GetInput(question), out input);
 
                 if (isNumber == false)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Error: input was not a number.");
+                    Console.ResetColor();
                     continue;
                 }
                 else if ((input > upperBound) || (input < lowerBound))
                 {
-                    Console.WriteLine($"Error: input was out of bounds ({lowerBound}-{upperBound})");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Error: input was out of bounds, input must be between {lowerBound} and {upperBound}"); 
+                    Console.ResetColor();
                     continue;
                 }
                 else
@@ -116,6 +146,8 @@ namespace ConsoleMusicPlayer
                     keepLooping = false;
                 }
             }
+
+            Console.WriteLine("Processing...");
             return input;
         }
 
@@ -141,7 +173,9 @@ namespace ConsoleMusicPlayer
 
         public void ChangeVolume()
         {
-            int userVolume = GetUserChoice(0, 100);
+            PrintTitle();
+            Console.WriteLine($"current volume level: {player.settings.volume}");
+            int userVolume = CheckUserInput(0, 100, "Please select a volume level (0-100)");
             player.settings.volume = userVolume;
         }
 
@@ -160,6 +194,7 @@ namespace ConsoleMusicPlayer
         public void StopCurrentSong()
         {
             player.controls.stop();
+            isPlaying = false;
         }
     }
 }

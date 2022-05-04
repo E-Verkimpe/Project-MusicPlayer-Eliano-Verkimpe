@@ -10,14 +10,15 @@ Probeer hiervoor de volgende functionaliteiten te implementeren:
 using ConsoleMusicPlayer;
 
 MediaPlayer musicPlayer = new MediaPlayer();
-musicPlayer.GetSongFile();
+musicPlayer.CheckSongFile();
 
 bool keepLooping = true;
 int userInput = 6;
 PossibleChoices userChoice = PossibleChoices.Default;
 while (keepLooping)
 {
-    userInput = musicPlayer.GetUserChoice(0,5);
+    musicPlayer.PrintInterface();
+    userInput = musicPlayer.CheckUserInput(0,5, "Please make a choice from the menu (0-5)");
     userChoice = (PossibleChoices)userInput;
 
     switch (userChoice)
@@ -35,7 +36,7 @@ while (keepLooping)
             musicPlayer.MuteUnmute();
             break;
         case PossibleChoices.PlayNewSong:
-            musicPlayer.GetSongFile();
+            musicPlayer.CheckSongFile();
             break;
         case PossibleChoices.Stop:
             musicPlayer.StopCurrentSong();
