@@ -1,8 +1,12 @@
-﻿
-namespace ConsoleMusicPlayer
+﻿namespace ConsoleMusicPlayer
 {
-    internal enum PossibleChoices
+    public enum PossibleChoices
     {
-        Quit, PlayPause, ChangeVolume, MuteUnmute, PlayNewSong, Stop, Default
+        Quit, PlayPause, ChangeVolume, MuteUnmute, PlayNewSong, Stop
+    }
+
+    public enum MediaPlayerState
+    {
+        Playing, Paused, Stopped
     }
 }

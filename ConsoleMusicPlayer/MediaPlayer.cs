@@ -6,26 +6,27 @@ namespace ConsoleMusicPlayer
     {
         private WindowsMediaPlayer player = new WindowsMediaPlayer();
 
-        public string MusicFolder { get; private set; }
-        private bool isPlaying = false;
+        private string musicFolder;
+        private MediaPlayerState currentState = MediaPlayerState.Stopped;
 
         public MediaPlayer()
         {
-            player.settings.volume = 5;
-            MusicFolder = "";
+            player.settings.volume = 10;
+            musicFolder = "";
         }
 
         private void PrintTitle()
         {
-            string title = @"
-___  ___         _ _         ______ _                       
-|  \/  |        | (_)        | ___ \ |                      
-| .  . | ___  __| |_  __ _   | |_/ / | __ _ _   _  ___ _ __ 
-| |\/| |/ _ \/ _` | |/ _` |  |  __/| |/ _` | | | |/ _ \ '__|
-| |  | |  __/ (_| | | (_| |  | |   | | (_| | |_| |  __/ |   
-\_|  |_/\___|\__,_|_|\__,_|  \_|   |_|\__,_|\__, |\___|_|   
-                                             __/ |          
-                                            |___/           ";
+            string[] title = new string[8];
+            title[0] = @"___  ___         _ _         ______ _";
+            title[1] = @"|  \/  |        | (_)        | ___ \ |";
+            title[2] = @"| .  . | ___  __| |_  __ _   | |_/ / | __ _ _   _  ___ _ __ ";
+            title[3] = @"| |\/| |/ _ \/ _` | |/ _` |  |  __/| |/ _` | | | |/ _ \ '__|";
+            title[4] = @"| |  | |  __/ (_| | | (_| |  | |   | | (_| | |_| |  __/ |";
+            title[5] = @"\_|  |_/\___|\__,_|_|\__,_|  \_|   |_|\__,_|\__, |\___|_|";
+            title[6] = @"                                             __/ |";
+            title[7] = @"                                            |___/           ";
+
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.DarkCyan;
             PrintStringCenter(title);
@@ -35,46 +36,96 @@ ___  ___         _ _         ______ _
 
         private void PrintMenu()
         {
-            string menu = @"
-╔════╦════════════════════╗
-║ #  ║ Function           ║
-╠════╬════════════════════╣
-║ 0  ║ Quit               ║
-║ 1  ║ Play/Pause         ║
-║ 2  ║ Change volume      ║
-║ 3  ║ Mute/Unmute        ║
-║ 4  ║ Play new song      ║
-║ 5  ║ Stop current song  ║
-╚════╩════════════════════╝";
-            Console.ForegroundColor= ConsoleColor.Cyan;
-            PrintStringCenter(menu);
+            string songName;
+            string artist;
+            string volume;
+
+            if (currentState == MediaPlayerState.Playing)
+            {
+                if (player.currentMedia.getItemInfo("Title") != null)
+                {
+                    songName = $"Currently playing: {player.currentMedia.getItemInfo("Title")}";
+                }
+                else
+                {
+                    songName = "Unable to retrieve song name";
+                }
+
+                if (player.currentMedia.getItemInfo("Artist") != null)
+                {
+                    artist = $"Artist: {player.currentMedia.getItemInfo("Artist")}";
+                }
+                else
+                {
+                    artist = "Unable to retrieve Artist name";
+                }
+            }
+            else if (currentState == MediaPlayerState.Paused)
+            {
+                songName = "Media player is paused";
+                artist = "";
+            }
+            else
+            {
+                songName = "Media player stopped";
+                artist = "";
+            }
+
+            if (player.settings.mute == true)
+            {
+                volume = "Media player is muted";
+            }
+            else
+            {
+                volume = FetchVolume();
+            }
+
+            string[] menuArray = new string[10];
+            menuArray[0] = "╔════╦════════════════════╗";
+            menuArray[1] = "║ #  ║ Function           ║";
+            menuArray[2] = "╠════╬════════════════════╣";
+            menuArray[3] = "║ 0  ║ Quit               ║";
+            menuArray[4] = $"║ 1  ║ Play/Pause         ║\t\t{songName}";
+            menuArray[5] = "║ 2  ║ Change volume      ║";
+            menuArray[6] = $"║ 3  ║ Mute/Unmute        ║\t\t{artist}";
+            menuArray[7] = "║ 4  ║ Play new song      ║";
+            menuArray[8] = $"║ 5  ║ Stop current song  ║\t\t{volume}";
+            menuArray[9] = "╚════╩════════════════════╝";
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            PrintStringCenter(menuArray);
             Console.ResetColor();
         }
 
-        private void PrintStringCenter(string text)
+        private void PrintStringCenter(string[] text)
         {
-            using (StringReader reader = new StringReader(text))
+            int longestLength = 0;
+            for (int i = 0; i < text.Length; i++)
             {
-                string line = string.Empty;
-                do
+                int lenght = text[i].Length;
+                if (lenght > longestLength)
                 {
-                    line = reader.ReadLine();
-                    if (line != null)
-                    {
-                        Console.SetCursorPosition((Console.WindowWidth - line.Length) / 2, Console.CursorTop);
-                        Console.WriteLine(line);
-                    }
-                } while (line != null);
+                    longestLength = lenght;
+                }
             }
+
+            string leadingSpaces = new string(' ', (Console.WindowWidth - longestLength) / 2);
+            for (int i = 0; i < text.Length; i++)
+            {
+                text[i] = leadingSpaces + text[i];
+            }
+
+            var centeredText = string.Join(Environment.NewLine, text);
+            Console.WriteLine(centeredText);
         }
 
-        public void PrintInterface()
+        private void PrintInterface()
         {
             PrintTitle();
             PrintMenu();
         }
 
-        private string GetInput(string requestedInfo)
+        private static string GetInput(string requestedInfo)
         {
             Console.WriteLine(requestedInfo);
             string userInput = Console.ReadLine();
@@ -88,11 +139,11 @@ ___  ___         _ _         ______ _
 
             while (filePath == "")
             {
-                string path = GetInput("Please enter a song file including the path.");
+                string path = GetInput("Please enter a song file including the path or - to quit.");
 
                 if (path == "-")
                 {
-                    filePath = path;
+                    Environment.Exit(0);
                 }
                 else if (Path.GetExtension(path) != ".mp3")
                 {
@@ -114,7 +165,7 @@ ___  ___         _ _         ______ _
 
             Console.Clear();
             PrintTitle();
-            MusicFolder = filePath;
+            musicFolder = filePath;
             PlaySong();
         }
 
@@ -122,6 +173,7 @@ ___  ___         _ _         ______ _
         {
             bool keepLooping = true;
             int input = lowerBound - 1;
+            PrintInterface();
 
             while (keepLooping)
             {
@@ -129,6 +181,7 @@ ___  ___         _ _         ______ _
 
                 if (isNumber == false)
                 {
+                    PrintInterface();
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Error: input was not a number.");
                     Console.ResetColor();
@@ -136,8 +189,9 @@ ___  ___         _ _         ______ _
                 }
                 else if ((input > upperBound) || (input < lowerBound))
                 {
+                    PrintInterface();
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Error: input was out of bounds, input must be between {lowerBound} and {upperBound}"); 
+                    Console.WriteLine($"Error: input was out of bounds, input must be between {lowerBound} and {upperBound}");
                     Console.ResetColor();
                     continue;
                 }
@@ -153,30 +207,38 @@ ___  ___         _ _         ______ _
 
         private void PlaySong()
         {
-            player.URL = MusicFolder;
-            isPlaying = true;
+            player.URL = musicFolder;
+            currentState = MediaPlayerState.Playing;
+            Thread.Sleep(500);
         }
 
         public void PlayPause()
         {
-            if (isPlaying == true)
+            if (currentState == MediaPlayerState.Playing)
             {
                 player.controls.pause();
-                isPlaying = false;
+                currentState = MediaPlayerState.Paused;
             }
             else
             {
                 player.controls.play();
-                isPlaying = true;
+                currentState = MediaPlayerState.Playing;
             }
         }
 
         public void ChangeVolume()
         {
-            PrintTitle();
-            Console.WriteLine($"current volume level: {player.settings.volume}");
             int userVolume = CheckUserInput(0, 100, "Please select a volume level (0-100)");
             player.settings.volume = userVolume;
+        }
+
+        private string FetchVolume()
+        {
+            int currentVolume = player.settings.volume;
+            string barFiller = new string('#', currentVolume / 10);
+            string barFillerEmpty = new string(' ', 10 - barFiller.Length);
+            string volume = $"Current Volume = {currentVolume}% [{barFiller}{barFillerEmpty}]";
+            return volume;
         }
 
         public void MuteUnmute()
@@ -194,7 +256,7 @@ ___  ___         _ _         ______ _
         public void StopCurrentSong()
         {
             player.controls.stop();
-            isPlaying = false;
+            currentState = MediaPlayerState.Stopped;
         }
     }
 }
