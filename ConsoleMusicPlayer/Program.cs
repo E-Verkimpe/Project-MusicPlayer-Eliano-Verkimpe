@@ -1,7 +1,7 @@
 ﻿using ConsoleMusicPlayer;
 
-MediaPlayer musicPlayer = new MediaPlayer();
-musicPlayer.CheckSongFile();
+MediaPlayer mediaplayer = new MediaPlayer();
+mediaplayer.CheckSongFile();
 
 bool keepLooping = true;
 int userInput;
@@ -9,7 +9,7 @@ PossibleChoices userChoice;
 
 while (keepLooping)
 {
-    userInput = musicPlayer.CheckUserInput(0, 5, "Please make a choice from the menu (0-5)");
+    userInput = mediaplayer.CheckUserInput(0, 5, "Please make a choice from the menu (0-5)");
     userChoice = (PossibleChoices)userInput;
 
     switch (userChoice)
@@ -19,23 +19,23 @@ while (keepLooping)
             break;
 
         case PossibleChoices.PlayPause:
-            musicPlayer.PlayPause();
+            mediaplayer.PlayPause();
             break;
 
         case PossibleChoices.ChangeVolume:
-            musicPlayer.ChangeVolume();
+            mediaplayer.ChangeVolume();
             break;
 
         case PossibleChoices.MuteUnmute:
-            musicPlayer.MuteUnmute();
+            mediaplayer.MuteUnmute();
             break;
 
         case PossibleChoices.PlayNewSong:
-            musicPlayer.CheckSongFile();
+            mediaplayer.CheckSongFile();
             break;
 
         case PossibleChoices.Stop:
-            musicPlayer.StopCurrentSong();
+            mediaplayer.StopCurrentSong();
             break;
 
         default:
