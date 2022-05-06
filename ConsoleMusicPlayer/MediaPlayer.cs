@@ -26,10 +26,9 @@ namespace ConsoleMusicPlayer
             string songName;
             string artist;
             string volume;
-
             if (currentState == MediaPlayerState.Playing)
             {
-                if (_player.currentMedia.getItemInfo("Title") != null)
+                if (_player.currentMedia.getItemInfo("Title") != "")
                 {
                     songName = $"Currently playing: {_player.currentMedia.getItemInfo("Title")}";
                 }
@@ -38,7 +37,7 @@ namespace ConsoleMusicPlayer
                     songName = "Unable to retrieve song name";
                 }
 
-                if (_player.currentMedia.getItemInfo("Artist") != null)
+                if (_player.currentMedia.getItemInfo("Artist") != "")
                 {
                     artist = $"Artist: {_player.currentMedia.getItemInfo("Artist")}";
                 }
@@ -194,7 +193,7 @@ namespace ConsoleMusicPlayer
         {
             _player.URL = musicFolder;
             currentState = MediaPlayerState.Playing;
-            Thread.Sleep(500);
+            Thread.Sleep(500); //wait for the song to load before fetching metadata.
         }
 
         public void PlayPause()
