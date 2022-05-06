@@ -21,7 +21,7 @@ namespace ConsoleMusicPlayer
             currentState = MediaPlayerState.Stopped;
         }
 
-        private void FetchMetaData()
+        public void FetchMetaData()
         {
             string songName;
             string artist;
@@ -80,40 +80,82 @@ namespace ConsoleMusicPlayer
             return volume;
         }
 
+        private string[] ProcessDirectory(string[] songFiles, string path)
+        {
+            string[] displaySongFiles;
+
+            if (songFiles.Length <= 5)
+            {
+                displaySongFiles = new string[songFiles.Length];
+            }
+            else
+            {
+                displaySongFiles = new string[5];
+            }
+
+            for (int i = 0; i < displaySongFiles.Length; i++)
+            {
+                displaySongFiles[i] = songFiles[i].Substring(path.Length + 1, songFiles[i].Length - path.Length - 5);
+            }
+            return displaySongFiles;
+        }
+
         public void CheckSongFile()
         {
             _frontend.PrintTitle();
-            string filePath = "";
+            string path = "";
+            bool keepLooping = true;
 
-            while (filePath == "")
+            while (keepLooping)
             {
-                string path = _frontend.GetInput("Please enter a song file including the path or - to quit.");
+                path = _frontend.GetInput("Please enter a song file including the path or - to quit.");
 
                 if (path == "-")
                 {
                     Environment.Exit(0);
                 }
-                else if (Path.GetExtension(path) != ".mp3")
+                else if ((Path.GetExtension(path) == ".mp3") && (File.Exists(path)))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("File is not an mp3");
-                    Console.ResetColor();
+                    musicFolder = path;
+                    keepLooping = false;
                 }
-                else if (!File.Exists(path))
+                else if (Directory.Exists(path))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Incorrect filepath entered or the song does not exist");
-                    Console.ResetColor();
+                    string[] songFiles = Directory.GetFiles(path, "*.mp3");
+
+                    if (songFiles.Length == 0)
+                    {
+                        _frontend.PrintTitle();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("No mp3 files found in the directory.");
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        string[] songNames = ProcessDirectory(songFiles, path);
+                        _frontend.PrintSongNames(songNames);
+                        int chosenSong = CheckUserInput(0, songNames.Length, $"Pick a song from the list: (0 - {songNames.Length})");
+
+                        if (chosenSong == 0)
+                        {
+                            Environment.Exit(0);
+                        }
+                        else
+                        {
+                            musicFolder = songFiles[chosenSong - 1];
+                            keepLooping = false;
+                        }
+                    }
                 }
                 else
                 {
-                    filePath = path;
+                    _frontend.PrintTitle();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("File is not an mp3 or directory not found.");
+                    Console.ResetColor();
                 }
             }
 
-            Console.Clear();
-            _frontend.PrintTitle();
-            musicFolder = filePath;
             PlaySong();
         }
 
@@ -121,7 +163,6 @@ namespace ConsoleMusicPlayer
         {
             bool keepLooping = true;
             int input = lowerBound - 1;
-            FetchMetaData();
 
             while (keepLooping)
             {
@@ -129,19 +170,15 @@ namespace ConsoleMusicPlayer
 
                 if (isNumber == false)
                 {
-                    FetchMetaData();
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Error: input was not a number.");
                     Console.ResetColor();
-                    continue;
                 }
                 else if ((input > upperBound) || (input < lowerBound))
                 {
-                    FetchMetaData();
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Error: input was out of bounds, input must be between {lowerBound} and {upperBound}");
                     Console.ResetColor();
-                    continue;
                 }
                 else
                 {
@@ -176,6 +213,7 @@ namespace ConsoleMusicPlayer
 
         public void ChangeVolume()
         {
+            FetchMetaData();
             int userVolume = CheckUserInput(0, 100, "Please select a volume level (0-100)");
             _player.settings.volume = userVolume;
         }

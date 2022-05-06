@@ -9,6 +9,7 @@ PossibleChoices userChoice;
 
 while (keepLooping)
 {
+    mediaplayer.FetchMetaData();
     userInput = mediaplayer.CheckUserInput(0, 5, "Please make a choice from the menu (0-5)");
     userChoice = (PossibleChoices)userInput;
 

@@ -1,5 +1,4 @@
-﻿
-namespace ConsoleMusicPlayer
+﻿namespace ConsoleMusicPlayer
 {
     internal class Frontend
     {
@@ -38,6 +37,24 @@ namespace ConsoleMusicPlayer
 
             Console.ForegroundColor = ConsoleColor.Cyan;
             PrintStringCenter(menuArray);
+            Console.ResetColor();
+        }
+
+        public void PrintSongNames(string[] songNames)
+        {
+            string[] songPaths = new string[songNames.Length + 3];
+            songPaths[0] = "#\tSong";
+            songPaths[1] = "=============================";
+            songPaths[2] = "0\tQuit";
+            for (int i = 0; i < songNames.Length; i++)
+            {
+                songPaths[i + 3] = $"{i + 1}\t{songNames[i]}";
+            }
+
+            Console.Clear();
+            PrintTitle();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            PrintStringCenter(songPaths);
             Console.ResetColor();
         }
 
